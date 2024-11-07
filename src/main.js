@@ -39,7 +39,6 @@ const app = Vue.createApp({
                     }
                 });
             }
-            console.log("filter", obj);
             return obj;
         },
     },
