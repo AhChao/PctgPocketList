@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PTCG Pocket Live</title>
+    <title>PTCG Pokcet 抽卡機率</title>
     <style>
         table{
             border: 1px solid black;
@@ -22,9 +22,12 @@
     </style>
 </head>
 <body id="app" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-    <h1>PTCG Pokcet 機率</h1>
+    <h1>PTCG Pokcet 抽卡機率</h1>
     <p><span>Filter:</span><input type="text" v-model="searchQuery" placeholder="輸入卡片名字..."></p>
-    <p>- 本機率表每個機率都是包含該張牌的所有卡面，僅供參考特定卡牌的抽取機率</p>
+    <p>- 本機率表每個機率都是包含該張牌的所有卡面，僅供參考特定卡牌的抽取機率<br/>
+        - 本表僅考慮一般封包，不考慮稀有封包<br/>
+
+    </p>
     <table>
         <thead><tr><th>名字</th><th>第 1 ~ 3 張機率</th><th>第 4 張機率</th><th>第 5 張機率</th></tr></thead>
         <tbody>
