@@ -146,7 +146,7 @@ const app = Vue.createApp({
                     alert(`剪貼簿內容不合法:${err}`);
                 }
             }).catch(err => {
-                console.error('無法讀取剪貼簿');
+                alert.error('無法讀取剪貼簿');
             });
         }
     }
