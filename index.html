@@ -6,6 +6,7 @@
     <title>PTCG Pokcet 抽卡機率</title>
     <style>
         table{
+            width: 100%;
             border: 1px solid black;
             border-collapse: collapse;
         }
@@ -19,41 +20,101 @@
             text-align: center;
             padding: 5px;
         }
+        .ballIcon{
+            fill: #8810CA;
+            background-blend-mode: multiply;
+            width: 12px;
+            margin-right: 5px;
+        }
+        button{
+            border-radius: 5px;
+            margin-left: 10px;
+            margin-bottom: 10px;
+        }
     </style>
+    <link rel="icon" href="./img/captured.svg" type="image/svg+xml">
 </head>
 <body id="app" style="display: flex; flex-direction: column; align-items: center; justify-content: center;">
-    <h1>PTCG Pokcet 抽卡機率</h1>
+    <h1><img src="./img/captured.svg" style="width: 25px;">PTCG Pokcet 抽卡機率</h1>
     <p><span>Filter:</span><input type="text" v-model="searchQuery" placeholder="輸入卡片名字..."></p>
     <p>- 本機率表每個機率都是包含該張牌的所有卡面，僅供參考特定卡牌的抽取機率<br/>
         - 本表僅考慮一般封包，不考慮稀有封包<br/>
-
     </p>
-    <table>
-        <thead><tr><th>名字</th><th>第 1 ~ 3 張機率</th><th>第 4 張機率</th><th>第 5 張機率</th></tr></thead>
-        <tbody>
-            <tr><td colspan="4" style="background-color: #B2095B;">噴火龍 包</td></tr>
-            <tr v-if="filteredCards != null && Object.keys(filteredCards) != 0" v-for="(name,index) in Object.keys(filteredCards['噴火龍'])">
-                <td>{{name}}</td>
-                <td>{{filteredCards['噴火龍'][name][0]}}</td>
-                <td>{{filteredCards['噴火龍'][name][1]}}</td>
-                <td>{{filteredCards['噴火龍'][name][2]}}</td>
-            </tr>
-            <tr><td colspan="4" style="background-color: #8810CA;">超夢 包</td></tr>
-            <tr v-if="filteredCards != null && Object.keys(filteredCards) != 0" v-for="(name,index) in Object.keys(filteredCards['超夢'])">
-                <td>{{name}}</td>
-                <td>{{filteredCards['超夢'][name][0]}}</td>
-                <td>{{filteredCards['超夢'][name][1]}}</td>
-                <td>{{filteredCards['超夢'][name][2]}}</td>
-            </tr>
-            <tr><td colspan="4" style="background-color: #C4930B;">皮卡丘 包</td></tr>
-            <tr v-if="filteredCards != null && Object.keys(filteredCards) != 0" v-for="(name,index) in Object.keys(filteredCards['皮卡丘'])">
-                <td>{{name}}</td>
-                <td>{{filteredCards['皮卡丘'][name][0]}}</td>
-                <td>{{filteredCards['皮卡丘'][name][1]}}</td>
-                <td>{{filteredCards['皮卡丘'][name][2]}}</td>
-            </tr>
-        </tbody>
-    </table>
+    <div>
+        <button @click="overwriteCaptured()">匯入捕捉紀錄</button>
+        <button @click="copyCaptured()">匯出捕捉紀錄</button>
+    </div>
+    <div v-for="(gen,index) in Object.keys(packs)">
+        <table v-for="(packName,index) in Object.keys(packs[gen])">
+            <thead><tr><th>名字</th><th>第 1 ~ 3 張機率</th><th>第 4 張機率</th><th>第 5 張機率</th></tr></thead>
+            <tbody> 
+                    <!-- {{packName}} {{packs[gen][packName]}} {{packs[gen][packName].index}} {{packs[gen][packName].color}} -->
+                <tr >
+                    <td colspan="4" :style="{'background-color':packs[gen][packName].color}" @click="triggerCollapsePack(packs[gen][packName].index)">{{packName}} 包
+                        <img :src="packCollapse[packs[gen][packName].index] ? '/img/minus.svg' : '/img/plus.svg'" class="ballIcon"/>
+                    </td>
+                </tr>
+                <tr v-if="filteredCards != null && Object.keys(filteredCards(gen)) != 0">
+                    <td :style="{'background-color':packs[gen][packName].color}">尚未抽到</td>
+                    <td :style="{'background-color':packs[gen][packName].color}">{{getNotCapturedRate(packName, gen, 0)}}%</td>
+                    <td :style="{'background-color':packs[gen][packName].color}">{{getNotCapturedRate(packName, gen, 1)}}%</td>
+                    <td :style="{'background-color':packs[gen][packName].color}">{{getNotCapturedRate(packName, gen, 2)}}%</td>
+                </tr>
+                <tr v-if="packCollapse[packs[gen][packName].index] && filteredCards(gen) != null && Object.keys(filteredCards(gen)) != 0" v-for="(name,index) in Object.keys(filteredCards(gen)[packName])">
+                    <td><img :src="isCaptured(name,'gen1') ? '/img/captured.svg' : '/img/notCaptured.svg'" class="ballIcon" @click="triggerCaptured(name,'gen1')"/>{{name}}</td>
+                    <td>{{filteredCards(gen)[packName][name][0]}}%</td>
+                    <td>{{filteredCards(gen)[packName][name][1]}}%</td>
+                    <td>{{filteredCards(gen)[packName][name][2]}}%</td>
+                </tr>
+
+                <!-- <tr><td colspan="4" style="background-color: #B2095B;" @click="triggerCollapsePack(0)">噴火龍 包
+                    <img :src="packCollapse[0] ? '/img/minus.svg' : '/img/plus.svg'" class="ballIcon"/>
+                </td></tr>
+                <tr v-if="filteredCards != null && Object.keys(filteredCards) != 0">
+                    <td style="background-color: #B2095B;">尚未抽到</td>
+                    <td style="background-color: #B2095B;">{{getNotCapturedRate('噴火龍','gen1',0)}}%</td>
+                    <td style="background-color: #B2095B;">{{getNotCapturedRate('噴火龍','gen1',1)}}%</td>
+                    <td style="background-color: #B2095B;">{{getNotCapturedRate('噴火龍','gen1',2)}}%</td>
+                </tr>
+                <tr v-if="packCollapse[0] && filteredCards != null && Object.keys(filteredCards) != 0" v-for="(name,index) in Object.keys(filteredCards['噴火龍'])">
+                    <td><img :src="isCaptured(name,'gen1') ? '/img/captured.svg' : '/img/notCaptured.svg'" class="ballIcon" @click="triggerCaptured(name,'gen1')"/>{{name}}</td>
+                    <td>{{filteredCards['噴火龍'][name][0]}}%</td>
+                    <td>{{filteredCards['噴火龍'][name][1]}}%</td>
+                    <td>{{filteredCards['噴火龍'][name][2]}}%</td>
+                </tr>
+                <tr><td colspan="4" style="background-color: #8810CA;" @click="triggerCollapsePack(1)">超夢 包
+                    <img :src="packCollapse[1] ? '/img/minus.svg' : '/img/plus.svg'" class="ballIcon"/>
+                </td></tr>
+                <tr v-if="filteredCards != null && Object.keys(filteredCards) != 0">
+                    <td style="background-color: #8810CA;">尚未抽到</td>
+                    <td style="background-color: #8810CA;">{{getNotCapturedRate('超夢','gen1',0)}}%</td>
+                    <td style="background-color: #8810CA;">{{getNotCapturedRate('超夢','gen1',1)}}%</td>
+                    <td style="background-color: #8810CA;">{{getNotCapturedRate('超夢','gen1',2)}}%</td>
+                </tr>
+                <tr v-if="packCollapse[1] && filteredCards != null && Object.keys(filteredCards) != 0" v-for="(name,index) in Object.keys(filteredCards['超夢'])">
+                    <td><img :src="isCaptured(name,'gen1') ? '/img/captured.svg' : '/img/notCaptured.svg'" class="ballIcon" @click="triggerCaptured(name,'gen1')"/>{{name}}</td>
+                    <td>{{filteredCards['超夢'][name][0]}}%</td>
+                    <td>{{filteredCards['超夢'][name][1]}}%</td>
+                    <td>{{filteredCards['超夢'][name][2]}}%</td>
+                </tr>
+                <tr><td colspan="4" style="background-color: #C4930B;" @click="triggerCollapsePack(2)">皮卡丘 包
+                    <img :src="packCollapse[2] ? '/img/minus.svg' : '/img/plus.svg'" class="ballIcon"/>
+                </td></tr>
+                <tr v-if="filteredCards != null && Object.keys(filteredCards) != 0">
+                    <td style="background-color: #C4930B;">尚未抽到</td>
+                    <td style="background-color: #C4930B;">{{getNotCapturedRate('皮卡丘','gen1',0)}}%</td>
+                    <td style="background-color: #C4930B;">{{getNotCapturedRate('皮卡丘','gen1',1)}}%</td>
+                    <td style="background-color: #C4930B;">{{getNotCapturedRate('皮卡丘','gen1',2)}}%</td>
+                </tr>
+                <tr v-if="packCollapse[2] && filteredCards != null && Object.keys(filteredCards) != 0" v-for="(name,index) in Object.keys(filteredCards['皮卡丘'])">
+                    <td><img :src="isCaptured(name,'gen1') ? '/img/captured.svg' : '/img/notCaptured.svg'" class="ballIcon" @click="triggerCaptured(name,'gen1')"/>{{name}}</td>
+                    <td>{{filteredCards['皮卡丘'][name][0]}}%</td>
+                    <td>{{filteredCards['皮卡丘'][name][1]}}%</td>
+                    <td>{{filteredCards['皮卡丘'][name][2]}}%</td>
+                </tr> -->
+            </tbody>
+        </table>
+    </div>
 
     <script src="./lib/vue.global.js"></script>
     <script type="module" src="./src/main.js"></script>
