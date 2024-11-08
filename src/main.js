@@ -53,11 +53,9 @@ const app = Vue.createApp({
             for(const rarity of Object.keys(cards)){
                 count[rarity] = cards[rarity].length;
             }
-            console.log("ct",count);
             for(const card of Object.keys(cardsWithRarity)){
                 cardsWithRarity[card] = this.calculateSingleCardOdds(cardsWithRarity[card], count);
             }
-            console.log("res",cardsWithRarity);
             return cardsWithRarity;
         },
         calculateSingleCardOdds(card, count){
