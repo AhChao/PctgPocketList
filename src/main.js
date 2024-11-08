@@ -44,7 +44,7 @@ const app = Vue.createApp({
     mounted() {
         this.init();
         const localCapturedData = JSON.parse(localStorage.getItem('ptcgPocketCaptured'));
-        this.captured = localCapturedData ? localCapturedData : {"gen1":[]};
+        this.captured = this.validateCapturedData(localCapturedData) ? localCapturedData : {"gen1":[]};
     },
     computed: {
         isSmallScreen() {
@@ -140,14 +140,22 @@ const app = Vue.createApp({
             navigator.clipboard.readText().then(text => {
                 try {
                     const capturedData = JSON.parse(text);
+                    if(!this.validateCapturedData(capturedData)){ throw new Error(text)};
                     this.captured = capturedData;
                     alert('成功覆蓋剪貼簿的內容至目前頁面');
                 } catch (error) {
-                    alert(`剪貼簿內容不合法:${err}`);
+                    alert(`非預期的錯誤或剪貼簿內容不合法，錯誤或目前剪貼簿內容為: ${error}`);
                 }
             }).catch(err => {
-                alert.error('無法讀取剪貼簿');
+                alert(`無法讀取剪貼簿，遇到的錯誤為: ${err}`);
             });
+        },
+        validateCapturedData(capturedData){
+            console.log(!capturedData, !capturedData.hasOwnProperty("gen1"), !Array.isArray(capturedData["gen1"]));
+            if (!capturedData || !capturedData.hasOwnProperty("gen1") || !Array.isArray(capturedData["gen1"])) {
+                return false;
+            }
+            return true;
         }
     }
 });
