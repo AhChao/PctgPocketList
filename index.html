@@ -41,6 +41,9 @@
         - 本表僅考慮一般封包，不考慮稀有封包<br/>
     </p>
     <div>
+        <input type="checkbox" v-model="onlyNotCaptured"><span>僅顯示未獲得</span>
+    </div>
+    <div>
         <button @click="overwriteCaptured()">匯入捕捉紀錄</button>
         <button @click="copyCaptured()">匯出捕捉紀錄</button>
     </div>

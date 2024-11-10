@@ -39,6 +39,7 @@ const app = Vue.createApp({
                 { rarity: 'crown', odds: [0, 0.04, 0.16] }
             ],
             isDarkMode: false,
+            onlyNotCaptured: false
         };
     },
     mounted() {
@@ -58,7 +59,7 @@ const app = Vue.createApp({
             for(const pack of Object.keys(filteredCardsObj)){
                 obj[pack] = {};
                 Object.keys(filteredCardsObj[pack]).forEach(name => {
-                    if (name.includes(this.searchQuery)) {
+                    if (name.includes(this.searchQuery) && ((!this.onlyNotCaptured)||(this.onlyNotCaptured && !this.isCaptured(name, gen)))) {
                         obj[pack][name] = filteredCardsObj[pack][name];
                     }
                 });
